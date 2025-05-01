@@ -60,46 +60,79 @@ int main()
         }
 
     //each edge had non-zero lenght --> per Cell2Ds (lati poligono)
-
-    for(unsigned int c = 0; c < mesh.NumCell2Ds; c++)
+        cout << mesh.NumCell2Ds << endl;
+    for(unsigned int poligono = 0; poligono < mesh.NumCell2Ds; poligono++)
     {
-    vector<unsigned int> edges = mesh.Cell2DsEdges[c];
+    vector<unsigned int> edges = mesh.Cell2DsEdges[poligono];
 
     for(unsigned int e = 0; e < edges.size(); e++)
     {
-        const unsigned int origin = mesh.Cell1DsExtrema[edges[e]][0];
+        const unsigned int origin = mesh.Cell1DsExtrema(0, edges[e]);
         
-        const unsigned int end = mesh.Cell1DsExtrema[edges[e]][1];
+        const unsigned int end = mesh.Cell1DsExtrema(1, edges[e]);
 
-        auto findOrigin = find(mesh.Cell2DsVertices[c].begin(), mesh.Cell2DsVertices[c].end(), origin);
-        if(findOrigin == mesh.Cell2DsVertices[c].end())
+        auto findOrigin = find(mesh.Cell2DsVertices[poligono].begin(), mesh.Cell2DsVertices[poligono].end(), origin);
+        if(findOrigin == mesh.Cell2DsVertices[poligono].end())
         {
         cerr << "Wrong mesh" << endl;
         return 2;
         }
 
-        auto findEnd = find(mesh.Cell2DsVertices[c].begin(), mesh.Cell2DsVertices[c].end(), end);
-        if(findEnd == mesh.Cell2DsVertices[c].end())
+        auto findEnd = find(mesh.Cell2DsVertices[poligono].begin(), mesh.Cell2DsVertices[poligono].end(), end);
+        if(findEnd == mesh.Cell2DsVertices[poligono].end())
             {
             cerr << "Wrong mesh" << endl;
             return 3;
             }
+        
+        double x_origin = mesh.Cell0DsCoordinates(0, origin);
+        double y_origin = mesh.Cell0DsCoordinates(1, origin);
+        double x_end = mesh.Cell0DsCoordinates(0, end);
+        double y_end = mesh.Cell0DsCoordinates(1, end);
 
-        double x_origin = mesh.Cell0DsCoordinates[findOrigin][0];
-        double y_origin = mesh.Cell0DsCoordinates[findOrigin][1];
-        double x_end = mesh.Cell0DsCoordinates[findEnd][0];
-        double y_end = mesh.Cell0DsCoordinates[findEnd][1];
-
-        if (x_origin == x_end && y_origin == y_end){
+        if (abs(x_origin - x_end) < 1e-9 && abs(y_origin - y_end) < 1e-9){
             cout << "Il segmento ha lunghezza 0";
             return 4;
         }
     }
+    
+        //each polygon has a non-zero area --> per Cell2Ds (area poligono)
+        double area = 0;
+        double x_origin, y_origin, x_end, y_end;
+        int origin = mesh.Cell1DsExtrema(0, edges[0]);
+        int end = mesh.Cell1DsExtrema(1, edges[0]);
+        bool first = true;
+        bool poliValid = true;
+
+        while( (origin != mesh.Cell1DsExtrema(0, edges[0])  || first ) && poliValid ){
+            if (first){
+                first = false;
+            }
+
+            x_origin = mesh.Cell0DsCoordinates(0, origin); 
+            y_origin = mesh.Cell0DsCoordinates(1, origin);
+            x_end = mesh.Cell0DsCoordinates(0, end);
+            y_end = mesh.Cell0DsCoordinates(1, end);
+
+            area += 0.5 * (x_origin*y_end - x_end*y_origin);
+
+            poliValid = false;
+            for(unsigned int i = 0; i < edges.size() && !poliValid; i++){
+                if(mesh.Cell1DsExtrema(0, edges[i]) == end ){
+                    origin = mesh.Cell1DsExtrema(0, edges[i]); 
+                    end = mesh.Cell1DsExtrema(1, edges[i]);
+                    poliValid = true;
+                }
+            }
+        }
+        if(poliValid)
+            cout << "Area poligono " << poligono << ": " << area << endl;
+        else
+            cout << "Poligono " << poligono << " non valido" << endl;
+
+
     }
 
-    //each polygon has a non-zero area --> per Cell2Ds (area poligono)
-    double area = 0;
-    //area += 0.5 * (x_origin*y_end -x_end*y_origin);
 
     //the loaded mesh is identical to the one shown in the provided images
 

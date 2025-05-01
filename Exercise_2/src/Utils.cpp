@@ -107,7 +107,7 @@ bool ImportCell1Ds(PolygonalMesh& mesh)
     }
 
     mesh.Cell1DsId.reserve(mesh.NumCell1Ds);
-    mesh.Cell1DsExtrema = Eigen::MatrixXi(2, mesh.NumCell1Ds);
+    mesh.Cell1DsExtrema = Eigen::MatrixXi(3, mesh.NumCell1Ds);
 
     for (const string& line : listLines)
     {
@@ -172,19 +172,41 @@ bool ImportCell2Ds(PolygonalMesh& mesh)
     {
         istringstream converter(line);
 
-        unsigned int id;
-        array<unsigned int, 3> vertices;
-        array<unsigned int, 3> edges;
+        unsigned int id, marker, numVertices, numEdges;
+        std::vector<unsigned int> vertices;
+        std::vector<unsigned int> edges;
 
-        converter >>  id;
-        for(unsigned int i = 0; i < 3; i++)
-            converter >> vertices[i];
-        for(unsigned int i = 0; i < 3; i++)
-            converter >> edges[i];
+        converter >> id >> marker;
+
+        converter >> numVertices;
+        for(unsigned int i = 0; i < numVertices; i++) {
+            unsigned int v;
+            converter >> v;
+            vertices.push_back(v);
+        }
+
+        converter >> numEdges;
+        for(unsigned int i = 0; i < numEdges; i++) {
+            unsigned int e;
+            converter >> e;
+            edges.push_back(e);
+        }
 
         mesh.Cell2DsId.push_back(id);
         mesh.Cell2DsVertices.push_back(vertices);
         mesh.Cell2DsEdges.push_back(edges);
+
+
+        const auto it = mesh.MarkerCell2Ds.find(marker);
+        if(it == mesh.MarkerCell2Ds.end())
+        {
+            mesh.MarkerCell2Ds.insert({marker, {id}});
+        }
+        else
+        {
+            it->second.push_back(id);
+        }
+        
     }
 
     return true;

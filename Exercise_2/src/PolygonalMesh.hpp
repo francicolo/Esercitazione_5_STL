@@ -23,12 +23,15 @@ struct PolygonalMesh
 
     unsigned int NumCell2Ds = 0; 
     std::vector<unsigned int> Cell2DsId = {};
-    unsigned int NumberCell2DsVertices = 0;
-    std::vector<array<unsigned int, NumberCell2DsVertices>> Cell2DsVertices = {};
-    unsigned int NumberCell2DsEdges = 0;
-    std::vector<array<unsigned int, NumberCell2sDEdges>> Cell2DsEdges = {};
+    //unsigned int NumberCell2DsVertices = 0;
+    //std::vector<array<unsigned int, NumberCell2DsVertices>> Cell2DsVertices = {};
+    std::vector<std::vector<unsigned int>> Cell2DsVertices;
+    //unsigned int NumberCell2DsEdges = 0;
+    //std::vector<array<unsigned int, NumberCell2DsEdges>> Cell2DsEdges = {};
+    std::vector<std::vector<unsigned int>> Cell2DsEdges;
     std::map<unsigned int, list<unsigned int>> MarkerCell2Ds = {};
 
-}
+
+};
 
 }
